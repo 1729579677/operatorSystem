@@ -2,6 +2,7 @@ package cpu.operatorsystem;
 
 
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -26,6 +27,28 @@ public class CPUscheduleController implements Initializable {
     boolean auto=true;
     int timeslice=0;
     int runtime=0;
+    boolean istie=false;
+    class autoRunning extends Thread{
+        ActionEvent event;
+
+        public autoRunning(ActionEvent event) {
+            this.event = event;
+        }
+
+        @Override
+        public void run() {
+            auto=true;
+            while(auto){
+                runningChecked(event);
+                System.out.println("1");
+                try{
+                    this.sleep(700);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
     @FXML
     private ComboBox<String> CPUNumCmbbox;
@@ -254,7 +277,7 @@ public class CPUscheduleController implements Initializable {
     @FXML
     void dispathChecked(ActionEvent event) {
 
-        int road=Integer.parseInt(CPUNumCmbbox.getValue().toString());
+        int road=Integer.parseInt(CPUNumCmbbox.getValue());
         if(reserve.size()<road-readyNum-running){
             if(reserve.size()==0)  return;
             else {
@@ -278,8 +301,11 @@ public class CPUscheduleController implements Initializable {
             readyNum=road;
         }
         //调度转换
-        if(modeCmbbox.getValue().equals("优先级"))     priorityDispatch();
-        else                                          timeDispatch();
+        if(running==0){
+            if(modeCmbbox.getValue().equals("优先级"))     priorityDispatch();
+            else                                          timeDispatch();
+        }
+
 
         this.reserveNameTxt.setText("");
         this.reserveTimeTxt.setText("");
@@ -323,9 +349,35 @@ public class CPUscheduleController implements Initializable {
                 }
                 running=0;
                 readyNum--;
-                if(reserve.size()!=0)
+                if(istie){
+                    priorityDispatch();
+                    int n=Integer.parseInt(untieNumTxt.getText());
+                    PCB pcb=tie.get(n-1);
+                    pcb.setState(2);
+                    ready.add(pcb);
+                    readyNum++;
+                    tie.removeElementAt(n-1);
+                    this.untieNumTxt.setText("");
+                    this.tieNameTxt.setText("");
+                    this.tieTimeTxt.setText("");
+                    this.tiePriorityTxt.setText("");
+                    for(int i=0;i<tie.size();i++){
+                        this.tieNameTxt.setText(this.tieNameTxt.getText()+tie.get(i).name+'\n');
+                        this.tieTimeTxt.setText(this.tieTimeTxt.getText()+tie.get(i).time+'\n');
+                        this.tiePriorityTxt.setText(this.tiePriorityTxt.getText()+tie.get(i).priority+'\n');
+                    }
+                    this.readyNameTxt.setText("");
+                    this.readyTimeTxt.setText("");
+                    this.readyPrioirtyTxt.setText("");
+                    for(int i=0;i<ready.size();i++){
+                        this.readyNameTxt.setText(this.readyNameTxt.getText()+ready.get(i).name+'\n');
+                        this.readyTimeTxt.setText(this.readyTimeTxt.getText()+ready.get(i).time+'\n');
+                        this.readyPrioirtyTxt.setText(this.readyPrioirtyTxt.getText()+ready.get(i).priority+'\n');
+                    }
+                    istie=false;
+                } else if(reserve.size()!=0){
                     dispathChecked(event);
-                else if(readyNum!=0){
+                } else if(readyNum!=0){
                     priorityDispatch();
                     this.readyNameTxt.setText("");
                     this.readyTimeTxt.setText("");
@@ -336,7 +388,8 @@ public class CPUscheduleController implements Initializable {
                         this.readyPrioirtyTxt.setText(this.readyPrioirtyTxt.getText()+ready.get(i).priority+'\n');
                     }
                 }else{
-                    rpcb.setTime(""+1);
+                    rpcb=null;
+                    auto=false;
                     this.runningNameTxt.setText("");
                     this.runningTimeTxt.setText("");
                     this.runningPriorityTxt.setText("");
@@ -363,7 +416,33 @@ public class CPUscheduleController implements Initializable {
                 }
                 running=0;
                 readyNum--;
-                if(reserve.size()!=0)
+                if(istie){
+                    priorityDispatch();
+                    int n=Integer.parseInt(untieNumTxt.getText());
+                    PCB pcb=tie.get(n-1);
+                    pcb.setState(2);
+                    ready.add(pcb);
+                    readyNum++;
+                    tie.removeElementAt(n-1);
+                    this.untieNumTxt.setText("");
+                    this.tieNameTxt.setText("");
+                    this.tieTimeTxt.setText("");
+                    this.tiePriorityTxt.setText("");
+                    for(int i=0;i<tie.size();i++){
+                        this.tieNameTxt.setText(this.tieNameTxt.getText()+tie.get(i).name+'\n');
+                        this.tieTimeTxt.setText(this.tieTimeTxt.getText()+tie.get(i).time+'\n');
+                        this.tiePriorityTxt.setText(this.tiePriorityTxt.getText()+tie.get(i).priority+'\n');
+                    }
+                    this.readyNameTxt.setText("");
+                    this.readyTimeTxt.setText("");
+                    this.readyPrioirtyTxt.setText("");
+                    for(int i=0;i<ready.size();i++){
+                        this.readyNameTxt.setText(this.readyNameTxt.getText()+ready.get(i).name+'\n');
+                        this.readyTimeTxt.setText(this.readyTimeTxt.getText()+ready.get(i).time+'\n');
+                        this.readyPrioirtyTxt.setText(this.readyPrioirtyTxt.getText()+ready.get(i).priority+'\n');
+                    }
+                    istie=false;
+                }else if(reserve.size()!=0)
                     dispathChecked(event);
                 else if(readyNum!=0) {
                     timeDispatch();
@@ -376,7 +455,8 @@ public class CPUscheduleController implements Initializable {
                         this.readyPrioirtyTxt.setText(this.readyPrioirtyTxt.getText() + ready.get(i).priority + '\n');
                     }
                 }else{
-                    rpcb.setTime(""+1);
+                    rpcb=null;
+                    auto=false;
                     this.runningNameTxt.setText("");
                     this.runningTimeTxt.setText("");
                     this.runningPriorityTxt.setText("");
@@ -405,16 +485,8 @@ public class CPUscheduleController implements Initializable {
     }
     @FXML
     void autorunningChecked(ActionEvent event){
-        auto=true;
-        while(auto){
-            runningChecked(event);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
+        autoRunning autorunning=new autoRunning(event);
+        autorunning.start();
     }
     @FXML
     void pauseChecked(ActionEvent event){
@@ -422,28 +494,7 @@ public class CPUscheduleController implements Initializable {
     }
     @FXML
     void untieChecked(ActionEvent event) {
-        int n=Integer.parseInt(untieNumTxt.getText());
-        PCB pcb=tie.get(n-1);
-        pcb.setState(2);
-        ready.add(pcb);
-        tie.removeElementAt(n-1);
-        this.readyNameTxt.setText("");
-        this.readyTimeTxt.setText("");
-        this.readyPrioirtyTxt.setText("");
-        for(int i=0;i<ready.size();i++){
-            this.readyNameTxt.setText(this.readyNameTxt.getText()+ready.get(i).name+'\n');
-            this.readyTimeTxt.setText(this.readyTimeTxt.getText()+ready.get(i).time+'\n');
-            this.readyPrioirtyTxt.setText(this.readyPrioirtyTxt.getText()+ready.get(i).priority+'\n');
-        }
-        this.tieNameTxt.setText("");
-        this.tieTimeTxt.setText("");
-        this.tiePriorityTxt.setText("");
-        for(int i=0;i<tie.size();i++){
-            this.tieNameTxt.setText(this.tieNameTxt.getText()+tie.get(i).name+'\n');
-            this.tieTimeTxt.setText(this.tieTimeTxt.getText()+tie.get(i).time+'\n');
-            this.tiePriorityTxt.setText(this.tiePriorityTxt.getText()+tie.get(i).priority+'\n');
-        }
-
+        istie=true;
     }
 
     @FXML
@@ -453,6 +504,8 @@ public class CPUscheduleController implements Initializable {
         pcb.setState(4);
         tie.add(pcb);
         ready.removeElementAt(n-1);
+        readyNum--;
+        this.tieNumTxt.setText("");
         this.readyNameTxt.setText("");
         this.readyTimeTxt.setText("");
         this.readyPrioirtyTxt.setText("");
@@ -469,6 +522,7 @@ public class CPUscheduleController implements Initializable {
             this.tieTimeTxt.setText(this.tieTimeTxt.getText()+tie.get(i).time+'\n');
             this.tiePriorityTxt.setText(this.tiePriorityTxt.getText()+tie.get(i).priority+'\n');
         }
+
     }
     @FXML
     void findChecked(ActionEvent event) {
@@ -503,3 +557,4 @@ public class CPUscheduleController implements Initializable {
     }
 
 }
+
