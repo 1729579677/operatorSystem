@@ -40,7 +40,6 @@ public class CPUscheduleController implements Initializable {
             auto=true;
             while(auto){
                 runningChecked(event);
-                System.out.println("1");
                 try{
                     this.sleep(700);
                 } catch (InterruptedException e) {
