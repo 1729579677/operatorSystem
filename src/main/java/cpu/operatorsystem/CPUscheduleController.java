@@ -48,6 +48,16 @@ public class CPUscheduleController implements Initializable {
             }
         }
     }
+    void sort(Vector<PCB> v){
+        for(int i=0;i<v.size();i++){
+            for(int j=0;j<v.size()-1;j++)
+                if(Integer.parseInt(v.get(j).getPriority())>Integer.parseInt(v.get(j+1).getPriority())){
+                    PCB p=v.get(j);
+                    v.set(j,v.get(j+1));
+                    v.set(j+1,p);
+                }
+        }
+    }
 
     @FXML
     private ComboBox<String> CPUNumCmbbox;
@@ -187,7 +197,9 @@ public class CPUscheduleController implements Initializable {
                 "1",
                 "2",
                 "3",
-                "4"
+                "4",
+                "5",
+                "6"
         );
         //数据源为空时显示
         CPUNumCmbbox.setPlaceholder(new Label("Placeholder"));
@@ -304,7 +316,7 @@ public class CPUscheduleController implements Initializable {
             if(modeCmbbox.getValue().equals("优先级"))     priorityDispatch();
             else                                          timeDispatch();
         }
-
+        if(modeCmbbox.getValue().equals("优先级"))    sort(ready);
 
         this.reserveNameTxt.setText("");
         this.reserveTimeTxt.setText("");
@@ -463,6 +475,7 @@ public class CPUscheduleController implements Initializable {
                 runtime=0;
             }else if(runtime>=timeslice){
                 ready.add(rpcb);
+                running=0;
                 timeDispatch();
                 this.readyNameTxt.setText("");
                 this.readyTimeTxt.setText("");
