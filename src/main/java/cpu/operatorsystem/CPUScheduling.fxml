@@ -6,7 +6,7 @@
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="831.0" prefWidth="973.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cpu.operatorsystem.CPUscheduleController">
+<AnchorPane prefHeight="831.0" prefWidth="1352.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cpu.operatorsystem.CPUscheduleController">
    <children>
       <Label fx:id="CPUNumTxt" layoutX="47.0" layoutY="45.0" prefHeight="24.0" prefWidth="67.0" text="CPU道数">
          <font>
@@ -32,14 +32,14 @@
          </font>
       </Label>
       <Label layoutX="42.0" layoutY="159.0" text="名称：" />
-      <Label layoutX="42.0" layoutY="225.0" text="时间：" />
-      <Label layoutX="42.0" layoutY="286.0" text="优先级：" />
+      <Label layoutX="42.0" layoutY="200.0" text="时间：" />
+      <Label layoutX="35.0" layoutY="241.0" text="优先级：" />
       <Button fx:id="addBtn" layoutX="45.0" layoutY="376.0" mnemonicParsing="false" onAction="#addChecked" prefHeight="30.0" prefWidth="80.0" text="添加" />
       <Button fx:id="resetBtn" layoutX="146.0" layoutY="376.0" mnemonicParsing="false" onAction="#resetChecked" prefHeight="30.0" prefWidth="80.0" text="重置" />
       <TextField fx:id="newNameTxt" layoutX="102.0" layoutY="154.0" prefHeight="30.0" prefWidth="128.0" />
-      <TextField fx:id="newTimeTxt" layoutX="102.0" layoutY="220.0" prefHeight="30.0" prefWidth="128.0" />
+      <TextField fx:id="newTimeTxt" layoutX="102.0" layoutY="195.0" prefHeight="30.0" prefWidth="128.0" />
       <ComboBox fx:id="CPUNumCmbbox" layoutX="119.0" layoutY="42.0" prefHeight="30.0" prefWidth="67.0" />
-      <ComboBox fx:id="newPriorityCmbbox" layoutX="102.0" layoutY="281.0" prefHeight="30.0" prefWidth="128.0" />
+      <ComboBox fx:id="newPriorityCmbbox" layoutX="102.0" layoutY="236.0" prefHeight="30.0" prefWidth="128.0" />
       <Label layoutX="315.0" layoutY="159.0" text="名称" />
       <Label layoutX="433.0" layoutY="159.0" text="时间" />
       <Label layoutX="526.0" layoutY="159.0" text="优先级" />
@@ -121,9 +121,48 @@
       <Button fx:id="randomBtn" layoutX="56.0" layoutY="332.0" mnemonicParsing="false" onAction="#randomChecked" prefHeight="30.0" prefWidth="160.0" text="随机生成5个" />
       <Button fx:id="autorunningBtn" layoutX="41.0" layoutY="712.0" mnemonicParsing="false" onAction="#autorunningChecked" prefHeight="30.0" prefWidth="89.0" text="自动运行" />
       <Button fx:id="pauseBtn" layoutX="155.0" layoutY="712.0" mnemonicParsing="false" onAction="#pauseChecked" prefHeight="30.0" prefWidth="80.0" text="暂停" />
-      <Label layoutX="231.0" layoutY="47.0" text="CPU调度方式" />
+      <Label layoutX="231.0" layoutY="47.0" text="CPU调度方式">
+         <font>
+            <Font size="16.0" />
+         </font></Label>
       <ComboBox fx:id="modeCmbbox" layoutX="329.0" layoutY="42.0" prefHeight="30.0" prefWidth="140.0" />
       <ComboBox fx:id="setTimeCmbbox" layoutX="593.0" layoutY="42.0" prefHeight="30.0" prefWidth="108.0" />
-      <Label layoutX="514.0" layoutY="47.0" text="时间片大小" />
+      <Label layoutX="514.0" layoutY="47.0" text="时间片大小">
+         <font>
+            <Font size="16.0" />
+         </font></Label>
+      <TextField fx:id="newLengthTxt" layoutX="102.0" layoutY="283.0" prefHeight="30.0" prefWidth="128.0" />
+      <Label layoutX="33.0" layoutY="288.0" text="内存大小:" />
+      <TextArea fx:id="memory" layoutX="975.0" layoutY="161.0" prefHeight="647.0" prefWidth="359.0" />
+      <Label layoutX="983.0" layoutY="124.0" text="地址">
+         <font>
+            <Font size="17.0" />
+         </font></Label>
+      <Label layoutX="1049.0" layoutY="123.0" text="进程名">
+         <font>
+            <Font size="17.0" />
+         </font></Label>
+      <Label layoutX="1131.0" layoutY="124.0" text="状态">
+         <font>
+            <Font size="17.0" />
+         </font></Label>
+      <Label layoutX="1208.0" layoutY="123.0" text="起址">
+         <font>
+            <Font size="17.0" />
+         </font></Label>
+      <Label layoutX="1279.0" layoutY="124.0" text="长度">
+         <font>
+            <Font size="17.0" />
+         </font></Label>
+      <Label layoutX="1120.0" layoutY="84.0" text="内存分配">
+         <font>
+            <Font size="18.0" />
+         </font></Label>
+      <ComboBox fx:id="devideCmbbox" layoutX="891.0" layoutY="43.0" prefHeight="30.0" prefWidth="184.0" />
+      <Label layoutX="757.0" layoutY="47.0" text="未分分区分配方法">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>

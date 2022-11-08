@@ -2,22 +2,22 @@ package cpu.operatorsystem;
 
 
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 
+
+import java.lang.reflect.Array;
 import java.net.URL;
-import java.util.ResourceBundle;
-import java.util.Vector;
+import java.util.*;
 
 public class CPUscheduleController implements Initializable {
     int running=0;
     int pid=0;
+
+    PCB[] memories=new PCB[50];
+    boolean[] flags=new boolean[50];
+    boolean[] head=new boolean[50];
     Vector<PCB> reserve=new Vector<PCB>();
     Vector<PCB> ready=new Vector<PCB>();
     Vector<PCB> end=new Vector<PCB>();
@@ -28,6 +28,7 @@ public class CPUscheduleController implements Initializable {
     int timeslice=0;
     int runtime=0;
     boolean istie=false;
+    Space[] spaces=new Space[50];
     class autoRunning extends Thread{
         ActionEvent event;
 
@@ -58,7 +59,10 @@ public class CPUscheduleController implements Initializable {
                 }
         }
     }
-
+    @FXML
+    private TextArea memory;
+    @FXML
+    private TextField newLengthTxt;
     @FXML
     private ComboBox<String> CPUNumCmbbox;
 
@@ -161,6 +165,8 @@ public class CPUscheduleController implements Initializable {
     private Button autorunningBtn;
     @FXML
     private ComboBox<String> setTimeCmbbox;
+    @FXML
+    private ComboBox<String> devideCmbbox;
 
     public void priorityDispatch(){
         if(running==0){
@@ -189,6 +195,133 @@ public class CPUscheduleController implements Initializable {
             this.runningTimeTxt.setText(rpcb.time);
             this.runningPriorityTxt.setText(rpcb.priority);
             running++;
+        }
+    }
+    public void firstMate(){
+        for(int i=0;i<ready.size();i++){
+            if(!ready.get(i).getMate()) {
+                for(int j=0;j<50-Integer.parseInt(ready.get(i).getLength());j++){//可更改内存的大小
+                    boolean flag1=true;
+                    if(flags[j])
+                        for(int k=1;k<Integer.parseInt(ready.get(i).getLength());k++){
+                            if(!flags[j+k]) {flag1=false;break;}
+                        }
+                    else          continue;
+                    if(flag1){
+                        memories[j]=ready.get(i);
+                        head[j]=true;
+                        for(int k=j;k<j+Integer.parseInt(ready.get(i).getLength());k++)
+                            flags[k]=false;
+                        break;
+                    }
+                }
+            }
+            ready.get(i).isMate(true);
+        }
+
+    }
+    public int findSpace(){
+        int start=-1;
+        int length=0;
+        int end=0;
+        int si=0;
+        for(int i=0;i<50;i++){
+            if(flags[i] && start==-1){
+                start=i;
+                length++;
+            }else if(flags[i]){
+                if(i==49)  {//这里有个小错误
+                    end=i-1;
+                    Space space=new Space(length,start,end);
+                    si++;
+                    spaces[si]=space;
+                    start=-1;
+                    length=0;
+                }else
+                length++;
+            }else if(!flags[i] && start!=-1){
+                end=i-1;
+                Space space=new Space(length,start,end);
+                si++;
+                spaces[si]=space;
+                start=-1;
+                length=0;
+            }
+        }
+        Arrays.sort(spaces,1,si+1);
+        for(int i=1;i<=si;i++)
+            System.out.println(spaces[i].getLength());
+        return si;
+    }
+
+    public int findSpaceDowm(){
+        int start=-1;
+        int length=0;
+        int end=0;
+        int si=0;
+        for(int i=0;i<50;i++){
+            if(flags[i] && start==-1){
+                start=i;
+                length++;
+            }else if(flags[i]){
+                if(i==49)  {//这里有个小错误
+                    end=i-1;
+                    Space space=new Space(length,start,end);
+                    si++;
+                    spaces[si]=space;
+                    start=-1;
+                    length=0;
+                }else
+                    length++;
+            }else if(!flags[i] && start!=-1){
+                end=i-1;
+                Space space=new Space(length,start,end);
+                si++;
+                spaces[si]=space;
+                start=-1;
+                length=0;
+            }
+        }
+        Comparator cmp=new Up();
+        Arrays.sort(spaces,1,si+1,cmp);
+        for(int i=1;i<=si;i++)
+            System.out.println(spaces[i].getLength());
+        return si;
+    }
+    public void bestMate(){
+        for(int i=0;i<ready.size();i++){
+            if(!ready.get(i).getMate()){
+                int num=findSpaceDowm();
+                for(int j=1;j<=num;j++){
+                    if(spaces[j].getLength()>=Integer.parseInt(ready.get(i).getLength())){
+                        memories[spaces[j].getStart()]=ready.get(i);
+                        head[spaces[j].getStart()]=true;
+                        for(int k=spaces[j].getStart();k<spaces[j].getStart()+Integer.parseInt(ready.get(i).getLength());k++)
+                            flags[k]=false;
+                        break;
+                    }
+
+                }
+            }
+            ready.get(i).isMate(true);
+        }
+    }
+    public void worstMate(){
+        for(int i=0;i<ready.size();i++){
+            if(!ready.get(i).getMate()){
+                int num=findSpace();
+                for(int j=1;j<=num;j++){
+                    if(spaces[j].getLength()>=Integer.parseInt(ready.get(i).getLength())){
+                        memories[spaces[j].getStart()]=ready.get(i);
+                        head[spaces[j].getStart()]=true;
+                        for(int k=spaces[j].getStart();k<spaces[j].getStart()+Integer.parseInt(ready.get(i).getLength());k++)
+                            flags[k]=false;
+                        break;
+                    }
+
+                }
+            }
+            ready.get(i).isMate(true);
         }
     }
     @Override
@@ -227,19 +360,62 @@ public class CPUscheduleController implements Initializable {
         newPriorityCmbbox.setEditable(false);
 
         setTimeCmbbox.getItems().addAll(
-                "1","2","3"
+                "1", "2", "3"
         );
         setTimeCmbbox.setPlaceholder(new Label("Placeholder"));
         setTimeCmbbox.setEditable(false);
-    }
+        for (int i = 1; i <= 50; i++)
+            this.memory.setText(this.memory.getText() + i + "\n");
+        for (int i = 0; i < 50; i++){
+            flags[i] = true;
+            head[i]=false;
+        }
 
+
+        devideCmbbox.getItems().addAll(
+                "首次适应算法",
+                "最佳适应算法",
+                "最差适应算法"
+        );
+//        devideCmbbox.setPromptText("首次适应算法");
+//        modeCmbbox.setPromptText("优先级");
+//        CPUNumCmbbox.setPromptText("5");
+        this.memory.setEditable(false);
+
+    }
+    public void view(){
+        memory.setText("");
+        int length=0;
+        int number=1;
+        for(int i=0;i<50;i++){
+            this.memory.setText(this.memory.getText() +(i+1));
+            if(head[i]){
+                this.memory.setText(this.memory.getText()+"\t\t\t"+
+                        this.memories[i].getName()+"\t   "+
+                        this.memories[i].getState()+"\t\t   "+
+                        (i+1)+"\t\t        "+this.memories[i].getLength()+
+                        "\n");
+                length=Integer.parseInt(memories[i].getLength())-1;
+                number=1;
+            }else if(length!=0){
+                this.memory.setText(this.memory.getText()+"\t\t\t\t\t\t\t\t\t\t\t"+(++number)+"\n");
+                --length;
+            }else{
+                this.memory.setText(this.memory.getText()+"\n");
+            }
+
+        }//可改变大小
+
+
+    }
 
     @FXML
     void addChecked(ActionEvent event) {
         String name=this.newNameTxt.getText();
         String time=this.newTimeTxt.getText();
         String priority=this.newPriorityCmbbox.getValue().toString();
-        PCB pcb=new PCB(name,time,priority);
+        String length=this.newLengthTxt.getText();
+        PCB pcb=new PCB(name,time,priority,length);
         pcb.setPID("A"+(++pid));
         pcb.setState(1);
         reserve.add(pcb);//reserve[i]=pcb;i++;
@@ -260,10 +436,16 @@ public class CPUscheduleController implements Initializable {
     @FXML
     void randomChecked(ActionEvent event){
         for(int i=1;i<=5;i++){
-            String name="p"+(int)(Math.random()*1001);
+            int n=(int)(Math.random()*1001+1);
+            String num;
+            if(n<10)                 num="00"+n;
+            else if(n>=10 && n<100)  num="0"+n;
+            else                     num=""+n;
+            String name="p"+num;
             int time=(int)(Math.random()*6+1);
             int priority=(int)(Math.random()*5+1);
-            PCB pcb=new PCB(name,""+time,""+priority);
+            int length=(int)(Math.random()*7+1);
+            PCB pcb=new PCB(name,""+time,""+priority,""+length);
             pcb.setState(1);
             reserve.add(pcb);
 
@@ -311,6 +493,17 @@ public class CPUscheduleController implements Initializable {
             }
             readyNum=road;
         }
+
+
+        if(devideCmbbox.getValue().equals("首次适应算法"))
+            firstMate();
+        else if(devideCmbbox.getValue().equals("最佳适应算法"))
+            bestMate();
+        else
+            worstMate();
+
+
+
         //调度转换
         if(running==0){
             if(modeCmbbox.getValue().equals("优先级"))     priorityDispatch();
@@ -334,6 +527,8 @@ public class CPUscheduleController implements Initializable {
             this.readyTimeTxt.setText(this.readyTimeTxt.getText()+ready.get(i).time+'\n');
             this.readyPrioirtyTxt.setText(this.readyPrioirtyTxt.getText()+ready.get(i).priority+'\n');
         }
+        view();
+
     }
 
     @FXML
@@ -360,6 +555,15 @@ public class CPUscheduleController implements Initializable {
                 }
                 running=0;
                 readyNum--;
+                for(int i=0;i<50;i++){
+                    if(head[i] && memories[i].getName().equals(rpcb.getName())){
+                        head[i]=false;
+                        for(int j=i;j<i+Integer.parseInt(memories[i].getLength());j++)
+                            flags[j]=true;
+                        memories[i]=null;
+                        break;
+                    }
+                }
                 if(istie){
                     priorityDispatch();
                     int n=Integer.parseInt(untieNumTxt.getText());
@@ -386,6 +590,7 @@ public class CPUscheduleController implements Initializable {
                         this.readyPrioirtyTxt.setText(this.readyPrioirtyTxt.getText()+ready.get(i).priority+'\n');
                     }
                     istie=false;
+                    view();
                 } else if(reserve.size()!=0){
                     dispathChecked(event);
                 } else if(readyNum!=0){
@@ -398,12 +603,14 @@ public class CPUscheduleController implements Initializable {
                         this.readyTimeTxt.setText(this.readyTimeTxt.getText()+ready.get(i).time+'\n');
                         this.readyPrioirtyTxt.setText(this.readyPrioirtyTxt.getText()+ready.get(i).priority+'\n');
                     }
+                    view();
                 }else{
                     rpcb=null;
                     auto=false;
                     this.runningNameTxt.setText("");
                     this.runningTimeTxt.setText("");
                     this.runningPriorityTxt.setText("");
+                    view();
                 }
             }else{
                 this.runningNameTxt.setText(rpcb.getName());
@@ -427,6 +634,15 @@ public class CPUscheduleController implements Initializable {
                 }
                 running=0;
                 readyNum--;
+                for(int i=0;i<50;i++){
+                    if(head[i] && memories[i].getName().equals(rpcb.getName())){
+                        head[i]=false;
+                        for(int j=i;j<i+Integer.parseInt(memories[i].getLength());j++)
+                            flags[i]=true;
+                        memories[i]=null;
+                        break;
+                    }
+                }
                 if(istie){
                     priorityDispatch();
                     int n=Integer.parseInt(untieNumTxt.getText());
@@ -453,6 +669,7 @@ public class CPUscheduleController implements Initializable {
                         this.readyPrioirtyTxt.setText(this.readyPrioirtyTxt.getText()+ready.get(i).priority+'\n');
                     }
                     istie=false;
+                    view();
                 }else if(reserve.size()!=0)
                     dispathChecked(event);
                 else if(readyNum!=0) {
@@ -465,12 +682,14 @@ public class CPUscheduleController implements Initializable {
                         this.readyTimeTxt.setText(this.readyTimeTxt.getText() + ready.get(i).time + '\n');
                         this.readyPrioirtyTxt.setText(this.readyPrioirtyTxt.getText() + ready.get(i).priority + '\n');
                     }
+                    view();
                 }else{
                     rpcb=null;
                     auto=false;
                     this.runningNameTxt.setText("");
                     this.runningTimeTxt.setText("");
                     this.runningPriorityTxt.setText("");
+                    view();
                 }
                 runtime=0;
             }else if(runtime>=timeslice){
@@ -569,4 +788,3 @@ public class CPUscheduleController implements Initializable {
     }
 
 }
-

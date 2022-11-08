@@ -7,18 +7,47 @@ public class PCB {
     String priority;
     int state;
     PCB pcb;
+    String length;
+    Boolean Mate;
 
 
-    public PCB(){}
-
-    public String getTime() {
-        return time;
+    public PCB(){
+        Mate=false;
     }
 
-    public PCB(String name, String time, String priority) {
+
+
+    public PCB(String name, String time, String priority,String length) {
         this.name = name;
         this.time = time;
         this.priority = priority;
+        this.length=length;
+        Mate=false;
+    }
+    public String getTime() {
+        return time;
+    }
+    public boolean getMate(){
+        return Mate;
+    }
+    public void isMate(Boolean mate) {
+        Mate = mate;
+    }
+
+    public PCB getPcb() {
+        return pcb;
+    }
+
+    public void setPcb(PCB pcb) {
+        this.pcb = pcb;
+    }
+
+    public String getLength() {
+        return length;
+    }
+
+    public void setLength(String length) {
+        this.length = length;
     }
 
     public void setTime(String time) {
